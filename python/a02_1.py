@@ -34,6 +34,7 @@ from a02_functions import ClimbCNN
 
 # %%
 # TODO: your code here
+model = ClimbCNN(in_channels=1, out_channels=1, kernel_size=2)
 
 # %% [markdown]
 # You can access the model parameters via `<model>.<param-name>`. Set all parameters to
@@ -41,7 +42,10 @@ from a02_functions import ClimbCNN
 
 # %%
 with torch.no_grad():  # needed so that you can assign values to the model parameters
-    # TODO: your code here
+    # Set convolution kernel to compute positive differences: [-1, 1]
+    # weight shape: (out_channels, in_channels, kernel_size)
+    model.conv.weight[:] = torch.tensor([[[-1.0, 1.0]]])
+    model.conv.bias[:] = 0.0
 
 # %% [markdown]
 # Simple test case that can be verified by hand.
@@ -68,7 +72,13 @@ print(y)  # should give: tensor([503.4000])
 # Now create a new `model2` that computes that total ascent (first output) and total descent (second output) simultaneously. Do this using the same model implementation as above, but change only hyperparameters and parameters.
 
 # %%
-# TODO: your code here
+# Create a model that outputs both total ascent and total descent.
+model2 = ClimbCNN(in_channels=1, out_channels=2, kernel_size=2)
+with torch.no_grad():
+    # First filter computes positive differences (ascent): [-1, 1]
+    # Second filter computes positive decreases (descent): [1, -1]
+    model2.conv.weight[:] = torch.tensor([[[-1.0, 1.0]], [[1.0, -1.0]]])
+    model2.conv.bias[:] = 0.0
 
 # %%
 x = torch.Tensor([0.0, 5.0, 11.0, 7.0, 15.0, 3.0]).view(1, -1)

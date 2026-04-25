@@ -134,8 +134,9 @@ def train_model(
 
     # Create PyTorch dataset and data loader.
     # TODO: your code here
-    train_dataset = ...
-    train_loader = ...
+    # Use CPU-backed tensors in the DataLoader and enable shuffling.
+    train_dataset = TensorDataset(x_train.cpu(), y_train.cpu())
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, pin_memory=True)
 
     # Set up logging.
     results = {
@@ -153,8 +154,8 @@ def train_model(
 
     # Define loss function and optimizer.
     # TODO: your code here
-    loss_fn = ...  # (use cross-entropy loss)
-    optimizer = ...  # (use, e.g., Adam)
+    loss_fn = nn.CrossEntropyLoss()  # (use cross-entropy loss)
+    optimizer = optim.Adam(model.parameters(), lr=lr)  # (use, e.g., Adam)
 
     # Training loop.
     for epoch in range(epochs):
@@ -164,14 +165,20 @@ def train_model(
             # Forward pass: Compute the model's output and the loss. Store the
             # computed loss in the results dict (using loss.item()).
             # TODO: your code here
-            output = ...
-            loss = ...
+            output = model(x)
+            loss = loss_fn(output, y)
             results["train_losses"].append(loss.item())
 
             # Backward pass: Compute the gradients of the loss with respect to all
             # the learnable parameters. Update the model's parameters using gradient
             # descent. Zero out the gradients for the next iteration.
             # TODO: your code here
+            # clear previous gradients
+            optimizer.zero_grad()
+            # compute gradients via backpropagation
+            loss.backward()
+            # update model weights
+            optimizer.step()
 
         # Logging (no need to modify this)
         if epoch % eval_every == 0:
